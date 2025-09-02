@@ -1,45 +1,41 @@
 import streamlit as st
-import cv2
 import numpy as np
-from PIL import Image
 from paddleocr import PaddleOCR
+from PIL import Image
 
-# Initialize OCR
-ocr = PaddleOCR(use_angle_cls=True, lang='en')
+# Load PaddleOCR once
+@st.cache_resource
+def load_ocr():
+    return PaddleOCR(use_angle_cls=True, lang='en')
 
-st.set_page_config(page_title="Cheating Detection App", layout="wide")
+ocr = load_ocr()
 
-st.title("Cheating Detection System")
-st.write("Upload an image or video to detect cheating behavior.")
+st.title("Handwritten Diary OCR App")
+st.write("Upload a handwritten diary page image to extract text")
 
-# Upload options
-option = st.selectbox("Choose Input Type", ["Image", "Video"])
+# Upload image
+uploaded_file = st.file_uploader("Upload an Image", type=["png", "jpg", "jpeg"])
 
-if option == "Image":
-    uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
-    if uploaded_file is not None:
-        image = Image.open(uploaded_file)
+if uploaded_file is not None:
+    try:
+        # Load image using PIL
+        image = Image.open(uploaded_file).convert("RGB")
         st.image(image, caption="Uploaded Image", use_column_width=True)
 
-        # Convert to OpenCV format
-        img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+        # Convert to NumPy array
+        image_np = np.array(image)
 
-        # Run OCR for text detection
-        results = ocr.ocr(np.array(image), cls=True)
-        detected_text = []
-        for res in results:
-            for line in res:
-                text, conf = line[1][0], line[1][1]
-                detected_text.append(f"{text} (conf: {conf:.2f})")
-        
-        st.subheader("Detected Text:")
-        if detected_text:
-            st.write("\n".join(detected_text))
-        else:
-            st.write("No text detected.")
+        # Run OCR
+        with st.spinner("Extracting text..."):
+            results = ocr.ocr(image_np, cls=True)
 
-elif option == "Video":
-    uploaded_video = st.file_uploader("Upload Video", type=["mp4", "avi", "mov"])
-    if uploaded_video is not None:
-        st.video(uploaded_video)
-        st.info("Video processing feature can be expanded for real-time cheating detection.")
+        # Display results
+        st.subheader("Extracted Text")
+        extracted_text = ""
+        for line in results[0]:
+            extracted_text += line[1][0] + "\n"
+
+        st.text_area("OCR Output", extracted_text, height=200)
+
+    except Exception as e:
+        st.error(f"Error processing image: {e}")
