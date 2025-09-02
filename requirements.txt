@@ -3,4 +3,4 @@ opencv-python-headless
 pillow
 numpy
 paddleocr
-paddlepaddle
+paddlepaddle-gpu  # or paddlepaddle if you don't have a GPU
