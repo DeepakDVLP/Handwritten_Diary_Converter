@@ -1,5 +1,5 @@
-paddleocr 
-opencv-python
-pandas
 streamlit
+paddleocr
+pandas
+opencv-python-headless
 openpyxl
