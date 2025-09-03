@@ -1,6 +1,5 @@
+paddleocr 
+opencv-python
+pandas
 streamlit
-opencv-python-headless
-pillow
-numpy
-paddleocr
-paddlepaddle-gpu  # or paddlepaddle if you don't have a GPU
+openpyxl
